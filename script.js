@@ -8,9 +8,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (savedPage) document.getElementById('currentPage').value = savedPage;
     if (savedFinished) document.getElementById('finishedBook').checked = savedFinished;
 
+    // Prompt for API key if not provided
+    let apiKey = localStorage.getItem('claude_api_key');
+    if (!apiKey) {
+        apiKey = prompt("Please enter your Claude API key to use this app:");
+        if (apiKey) {
+            localStorage.setItem('claude_api_key', apiKey);
+        }
+    }
+
     // Form submission
     document.getElementById('bookForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        // Get current API key
+        apiKey = localStorage.getItem('claude_api_key');
+        if (!apiKey) {
+            alert("You need to provide a Claude API key to use this app.");
+            apiKey = prompt("Please enter your Claude API key:");
+            if (apiKey) {
+                localStorage.setItem('claude_api_key', apiKey);
+            } else {
+                return;
+            }
+        }
         
         const bookTitle = document.getElementById('bookTitle').value;
         const currentPage = document.getElementById('currentPage').value;
@@ -27,31 +48,35 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('response').style.display = 'none';
         
         try {
-            console.log("Sending request to function...");
-            // Call our serverless function
-            const response = await fetch('/.netlify/functions/askClaude', {
+            // Build system prompt
+            const systemPrompt = finishedBook 
+                ? `User has finished reading "${bookTitle}". Discuss any aspect.`
+                : `User is reading "${bookTitle}" on page ${currentPage}. No spoilers past this page.`;
+            
+            // Call Claude API directly
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'x-api-key': apiKey,
+                    'anthropic-version': '2023-06-01'
                 },
                 body: JSON.stringify({
-                    bookTitle,
-                    currentPage,
-                    question,
-                    finishedBook
-                }),
+                    model: 'claude-3-sonnet-20240229',
+                    max_tokens: 1000,
+                    system: systemPrompt,
+                    messages: [{ role: 'user', content: question }]
+                })
             });
             
-            console.log("Response status:", response.status);
             const data = await response.json();
-            console.log("Response data:", data);
             
             // Display the response
             const responseDiv = document.getElementById('response');
             if (data.error) {
-                responseDiv.innerHTML = `<strong>Error:</strong> ${data.error}`;
+                responseDiv.innerHTML = `<strong>Error:</strong> ${data.error.message || data.error}`;
             } else {
-                responseDiv.innerHTML = `<strong>Q: ${question}</strong><hr>${data.answer || "No answer provided"}`;
+                responseDiv.innerHTML = `<strong>Q: ${question}</strong><hr>${data.content[0].text}`;
             }
             responseDiv.style.display = 'block';
         } catch (error) {
