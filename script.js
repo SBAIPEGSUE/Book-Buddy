@@ -53,31 +53,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? `User has finished reading "${bookTitle}". Discuss any aspect.`
                 : `User is reading "${bookTitle}" on page ${currentPage}. No spoilers past this page.`;
             
-            // Call Claude API directly
-            const response = await fetch('https://api.anthropic.com/v1/messages', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': apiKey,
-                    'anthropic-version': '2023-06-01'
-                },
-                body: JSON.stringify({
-                    model: 'claude-3-sonnet-20240229',
-                    max_tokens: 1000,
-                    system: systemPrompt,
-                    messages: [{ role: 'user', content: question }]
-                })
-            });
-            
-            const data = await response.json();
-            
-            // Display the response
+            // Create a response element
             const responseDiv = document.getElementById('response');
-            if (data.error) {
-                responseDiv.innerHTML = `<strong>Error:</strong> ${data.error.message || data.error}`;
-            } else {
-                responseDiv.innerHTML = `<strong>Q: ${question}</strong><hr>${data.content[0].text}`;
-            }
+            responseDiv.innerHTML = `<strong>Q: ${question}</strong><hr>
+            <p>Thinking about "${bookTitle}" (Page ${currentPage})...</p>
+            <p>Because of browser security restrictions (CORS), we can't call Claude directly from a website.</p>
+            <p>For a complete app, you would need to:</p>
+            <ol>
+                <li>Set up a proper Netlify function</li>
+                <li>Use a backend service</li>
+                <li>Or create an app with a different architecture</li>
+            </ol>
+            <p>Try this system prompt with Claude directly:</p>
+            <pre>${systemPrompt}</pre>
+            <p>And then ask your question: "${question}"</p>`;
             responseDiv.style.display = 'block';
         } catch (error) {
             console.error('Error details:', error);
