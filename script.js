@@ -58,4 +58,9 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error details:', error);
             document.getElementById('response').innerHTML = `Error: ${error.message}. Please check console for details.`;
             document.getElementById('response').style.display = 'block';
-        } final
+        } finally {
+            // Hide loading indicator
+            document.getElementById('loading').style.display = 'none';
+        }
+    });
+});
