@@ -1,4 +1,5 @@
-const fetch = require('node-fetch');
+// Using require syntax for compatibility
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 exports.handler = async function(event, context) {
   try {
