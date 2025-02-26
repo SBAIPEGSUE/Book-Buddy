@@ -1,1 +1,8 @@
-
+{
+  "name": "book-buddy",
+  "version": "1.0.0",
+  "description": "A spoiler-free book companion",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}
