@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('response').style.display = 'none';
         
         try {
+            console.log("Sending request to function...");
             // Call our serverless function
             const response = await fetch('/.netlify/functions/askClaude', {
                 method: 'POST',
@@ -41,19 +42,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 }),
             });
             
+            console.log("Response status:", response.status);
             const data = await response.json();
+            console.log("Response data:", data);
             
             // Display the response
             const responseDiv = document.getElementById('response');
-            responseDiv.innerHTML = `<strong>Q: ${question}</strong><hr>${data.answer}`;
+            if (data.error) {
+                responseDiv.innerHTML = `<strong>Error:</strong> ${data.error}`;
+            } else {
+                responseDiv.innerHTML = `<strong>Q: ${question}</strong><hr>${data.answer || "No answer provided"}`;
+            }
             responseDiv.style.display = 'block';
         } catch (error) {
-            console.error('Error:', error);
-            document.getElementById('response').innerHTML = 'Sorry, something went wrong. Please try again.';
+            console.error('Error details:', error);
+            document.getElementById('response').innerHTML = `Error: ${error.message}. Please check console for details.`;
             document.getElementById('response').style.display = 'block';
-        } finally {
-            // Hide loading indicator
-            document.getElementById('loading').style.display = 'none';
-        }
-    });
-});
+        } final
